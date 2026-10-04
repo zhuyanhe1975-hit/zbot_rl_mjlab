@@ -29,6 +29,7 @@ from .robot import robot_cfg
 
 TASK_ID = "Mjlab-Zbot-6dof-Periodic-Stepping"
 WALKING_TASK_ID = "Mjlab-Zbot-6dof-Walking"
+STEP_LENGTH_WALKING_TASK_ID = "Mjlab-Zbot-6dof-Step-Length-Walking"
 DISTURBED_WALKING_TASK_ID = "Mjlab-Zbot-6dof-Disturbed-Walking"
 MIN_STEP_FREQUENCY = 0.2
 MAX_STEP_FREQUENCY = 1.0
@@ -46,8 +47,8 @@ def env_cfg(play=False):
         raise ValueError("Test frequency must be finite and positive")
     feet = ContactSensorCfg(name="feet_ground_contact", primary=ContactMatch(mode="body", pattern=("foot_0", "foot_1"), entity="robot"), secondary=ContactMatch(mode="body", pattern="terrain"), fields=("found", "force"), reduce="netforce", track_air_time=True)
     height = TerrainHeightSensorCfg(name="foot_height_scan", frame=(ObjRef(type="body", name="foot_0", entity="robot"), ObjRef(type="body", name="foot_1", entity="robot")), ray_alignment="yaw", pattern=RingPatternCfg.single_ring(radius=0.03, num_samples=6), max_distance=1.0, exclude_parent_body=True, include_geom_groups=(0,), debug_vis=True)
-    actor = {"base_lin_vel": ObservationTermCfg(func=mdp.base_lin_vel), "base_ang_vel": ObservationTermCfg(func=mdp.base_ang_vel), "yaw_ang_vel": ObservationTermCfg(func=mdp.yaw_ang_vel_observation), "projected_gravity": ObservationTermCfg(func=mdp.projected_gravity), "yaw_error": ObservationTermCfg(func=mdp.yaw_error_observation), "joint_pos": ObservationTermCfg(func=envs_mdp.joint_pos_rel), "joint_vel": ObservationTermCfg(func=envs_mdp.joint_vel_rel), "actions": ObservationTermCfg(func=envs_mdp.last_action), "phase": ObservationTermCfg(func=mdp.phase_observation), "frequency": ObservationTermCfg(func=mdp.frequency_observation)}
-    rewards = {"frequency_tracking": RewardTermCfg(func=mdp.alternating_foot_phase, weight=3.0, params={"sensor_name": feet.name}), "swing_clearance": RewardTermCfg(func=mdp.swing_clearance, weight=0.5, params={"sensor_name": feet.name, "height_sensor_name": height.name}), "forward_velocity": RewardTermCfg(func=mdp.forward_velocity_reward, weight=5.0, params={"scale": 0.2}), "lateral_velocity": RewardTermCfg(func=mdp.lateral_velocity_penalty, weight=-0.0), "upright": RewardTermCfg(func=mdp.upright, weight=0.2), "yaw_drift": RewardTermCfg(func=mdp.yaw_drift_penalty, weight=-0.2), "yaw_ang_vel": RewardTermCfg(func=mdp.yaw_ang_vel_penalty, weight=-0.1), "support_foot_slip": RewardTermCfg(func=mdp.support_foot_slip, weight=-10.0, params={"sensor_name": feet.name}), "soft_landing": RewardTermCfg(func=mdp.soft_landing, weight=-2e-2, params={"sensor_name": feet.name}), "action_rate": RewardTermCfg(func=mdp.action_rate_l2, weight=-0.05), "joint_limits": RewardTermCfg(func=mdp.joint_pos_limits, weight=-0.1)}
+    actor = {"base_lin_vel": ObservationTermCfg(func=mdp.base_lin_vel), "base_ang_vel": ObservationTermCfg(func=mdp.base_ang_vel), "projected_gravity": ObservationTermCfg(func=mdp.projected_gravity), "yaw_error": ObservationTermCfg(func=mdp.yaw_error_observation), "joint_pos": ObservationTermCfg(func=envs_mdp.joint_pos_rel), "joint_vel": ObservationTermCfg(func=envs_mdp.joint_vel_rel), "actions": ObservationTermCfg(func=envs_mdp.last_action), "phase": ObservationTermCfg(func=mdp.phase_observation), "frequency": ObservationTermCfg(func=mdp.frequency_observation)}
+    rewards = {"frequency_tracking": RewardTermCfg(func=mdp.alternating_foot_phase, weight=3.0, params={"sensor_name": feet.name}), "swing_clearance": RewardTermCfg(func=mdp.swing_clearance, weight=0.5, params={"sensor_name": feet.name, "height_sensor_name": height.name}), "forward_velocity": RewardTermCfg(func=mdp.forward_velocity_reward, weight=5.0, params={"scale": 0.2}), "lateral_velocity": RewardTermCfg(func=mdp.lateral_velocity_penalty, weight=-0.0), "upright": RewardTermCfg(func=mdp.upright, weight=0.2), "yaw_drift": RewardTermCfg(func=mdp.yaw_drift_penalty, weight=-0.2), "yaw_ang_vel": RewardTermCfg(func=mdp.yaw_ang_vel_penalty, weight=-0.0), "support_foot_slip": RewardTermCfg(func=mdp.support_foot_slip, weight=-10.0, params={"sensor_name": feet.name}), "soft_landing": RewardTermCfg(func=mdp.soft_landing, weight=-2e-2, params={"sensor_name": feet.name}), "action_rate": RewardTermCfg(func=mdp.action_rate_l2, weight=-0.05), "joint_limits": RewardTermCfg(func=mdp.joint_pos_limits, weight=-0.1)}
     class VizCfg(UniformVelocityCommandCfg):
         def build(self, env):
             return mdp.ForwardVelocityVisualizer(self, env)
@@ -79,6 +80,21 @@ def stepping_ppo_cfg():
 def walking_ppo_cfg():
     cfg = ppo_cfg()
     cfg.experiment_name = "zbot_walking"
+    return cfg
+
+def step_length_walking_cfg(play=False):
+    cfg = walking_cfg(play=play)
+    cfg.rewards.pop("forward_velocity")
+    cfg.rewards["forward_step_length"] = RewardTermCfg(
+        func=mdp.ForwardStepLengthReward,
+        weight=2.0,
+        params={"sensor_name": "feet_ground_contact", "scale": 0.3},
+    )
+    return cfg
+
+def step_length_walking_ppo_cfg():
+    cfg = walking_ppo_cfg()
+    cfg.experiment_name = "zbot_step_length_walking"
     return cfg
 
 def disturbed_walking_cfg(play=False):

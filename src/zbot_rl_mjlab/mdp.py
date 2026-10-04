@@ -203,6 +203,46 @@ def soft_landing(env, sensor_name="feet_ground_contact"):
     impact = data.force.norm(dim=-1) * first_contact.float()
     return impact.sum(-1)
 
+
+class ForwardStepLengthReward:
+    """Reward each foot's forward displacement between its touchdowns."""
+
+    def __init__(self, cfg, env):
+        self._env = env
+        self._sensor_name = cfg.params.get("sensor_name", "feet_ground_contact")
+        self._scale = float(cfg.params.get("scale", 0.05))
+        if self._scale <= 0:
+            raise ValueError("Step length scale must be positive")
+        robot = env.scene["robot"]
+        self._feet = robot.find_bodies(("foot_0", "foot_1"), preserve_order=True)[0]
+        self._previous_touchdown = torch.zeros(
+            (env.num_envs, len(self._feet), 3), device=env.device
+        )
+        self._has_touchdown = torch.zeros(
+            (env.num_envs, len(self._feet)), dtype=torch.bool, device=env.device
+        )
+
+    def reset(self, env_ids=None):
+        if env_ids is None:
+            env_ids = slice(None)
+        self._previous_touchdown[env_ids] = 0.0
+        self._has_touchdown[env_ids] = False
+
+    def __call__(self, env, **kwargs):
+        del kwargs
+        robot = env.scene["robot"]
+        positions = robot.data.body_link_pos_w[:, self._feet]
+        touchdown = env.scene[self._sensor_name].compute_first_contact(dt=env.step_dt).bool()
+        forward = _forward_world(env).unsqueeze(1)
+        displacement = ((positions - self._previous_touchdown) * forward).sum(-1)
+        valid = touchdown & self._has_touchdown
+        score = displacement.clamp_min(0.0) * valid
+        self._previous_touchdown = torch.where(
+            touchdown.unsqueeze(-1), positions, self._previous_touchdown
+        )
+        self._has_touchdown |= touchdown
+        return score.sum(-1) / env.step_dt
+
 def action_rate_l2(env):
     return (env.action_manager.action - env.action_manager.prev_action).square().sum(-1)
 

@@ -29,7 +29,12 @@ class PlayConfig:
 def main():
     task, remaining = tyro.cli(
         tyro.extras.literal_type_from_choices(
-            ["Mjlab-Zbot-6dof-Periodic-Stepping", "Mjlab-Zbot-6dof-Walking", "Mjlab-Zbot-6dof-Disturbed-Walking"]
+            [
+                "Mjlab-Zbot-6dof-Periodic-Stepping",
+                "Mjlab-Zbot-6dof-Walking",
+                "Mjlab-Zbot-6dof-Disturbed-Walking",
+                "Mjlab-Zbot-6dof-Step-Length-Walking",
+            ]
         ),
         add_help=False, return_unknown_args=True, config=mjlab.TYRO_FLAGS,
     )
