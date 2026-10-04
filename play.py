@@ -29,7 +29,7 @@ class PlayConfig:
 def main():
     task, remaining = tyro.cli(
         tyro.extras.literal_type_from_choices(
-            ["Mjlab-Zbot-6dof-Periodic-Stepping", "Mjlab-Zbot-6dof-Walking"]
+            ["Mjlab-Zbot-6dof-Periodic-Stepping", "Mjlab-Zbot-6dof-Walking", "Mjlab-Zbot-6dof-Disturbed-Walking"]
         ),
         add_help=False, return_unknown_args=True, config=mjlab.TYRO_FLAGS,
     )
@@ -39,6 +39,14 @@ def main():
     cfg.env.scene.env_spacing = 1.0
     cfg.env.viewer.enable_shadows = True
     cfg.env.viewer.enable_reflections = True
+    disturbance = cfg.env.events.get("base_disturbance")
+    if disturbance is not None:
+        params = disturbance.params
+        force_range = tuple(params.get("force_range", ()))
+        torque_range = tuple(params.get("torque_range", ()))
+        if force_range == (0.0, 0.0) and torque_range == (0.0, 0.0):
+            cfg.env.events.pop("base_disturbance")
+            print("Disturbance disabled: base_disturbance event removed")
     if not 0 < cfg.env.step_frequency_min <= cfg.env.step_frequency_max:
         raise ValueError("Require 0 < step-frequency-min <= step-frequency-max")
     agent = load_rl_cfg(task)

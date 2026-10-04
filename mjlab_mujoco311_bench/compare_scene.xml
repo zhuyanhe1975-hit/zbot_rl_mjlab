@@ -1,0 +1,211 @@
+<mujoco model="mjlab scene">
+  <compiler angle="radian" meshdir="../assets/zbot_6dof/meshes" />
+
+  <option timestep="0.005" integrator="implicitfast" iterations="10" ls_iterations="20" ccd_iterations="50" />
+
+  <size nkey="1" />
+
+  <visual>
+    <global azimuth="135" elevation="-25" offwidth="1920" offheight="1080" />
+    <quality shadowsize="8192" />
+    <headlight ambient="0.3 0.3 0.3" diffuse="0.6 0.6 0.6" specular="0 0 0" />
+    <scale forcewidth="0.25" contactwidth="0.4" contactheight="0.15" framelength="5" framewidth="0.3" />
+    <rgba haze="0.15 0.25 0.35 1" force="1 0 0 1" />
+  </visual>
+
+  <statistic meaninertia="0.845062" meanmass="0.231157" meansize="0.03" extent="0.766533" center="0 0 0.318" />
+
+  <asset>
+    <texture type="2d" colorspace="auto" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300" />
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="4 4" reflectance="0.2" />
+    <mesh name="robot/mesh_2fa6986b40efe990" content_type="model/obj" file="training_2fa6986b40efe9909aec.obj" />
+    <mesh name="robot/mesh_cdb66879ba3b5662" content_type="model/obj" file="training_cdb66879ba3b56626fc6.obj" />
+    <mesh name="robot/mesh_b2f807ccdba07ce2" content_type="model/obj" file="training_b2f807ccdba07ce2ef4e.obj" />
+    <mesh name="robot/mesh_8c7e589cf98741ba" content_type="model/obj" file="training_8c7e589cf98741bac18c.obj" />
+  </asset>
+
+<worldbody>
+    <body name="terrain"><geom name="terrain" size="0 0 0.01" type="plane" material="groundplane" group="0" /></body>
+<body name="ref/foot_0">
+      <inertial pos="-0.00824865 -1.26867e-05 0.0283427" quat="0.648172 0.646936 -0.284308 0.283753" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+      <joint name="ref/root" type="free" />
+      <geom name="ref/foot_0_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_2fa6986b40efe990" />
+      <geom name="ref/foot_0_collisions" type="mesh" group="4" friction="0.6" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_2fa6986b40efe990" />
+      <body name="ref/b1" pos="0 0 0.053">
+        <inertial pos="0.00824865 -1.26864e-05 0.0246573" quat="0.646936 0.648172 -0.283753 0.284308" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+        <joint name="ref/joint1" pos="0 0 0" axis="0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+        <geom name="ref/b1_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_cdb66879ba3b5662" />
+        <geom name="ref/b1_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_cdb66879ba3b5662" />
+        <body name="ref/a2" pos="0 0 0.053">
+          <inertial pos="0.00824865 1.26867e-05 0.0283427" quat="0.284308 0.283753 -0.648172 0.646936" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+          <geom name="ref/a2_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_b2f807ccdba07ce2" />
+          <geom name="ref/a2_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_b2f807ccdba07ce2" />
+          <body name="ref/b2" pos="0 0 0.053">
+            <inertial pos="-0.00824865 1.26864e-05 0.0246573" quat="0.283753 0.284308 -0.646936 0.648172" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+            <joint name="ref/joint2" pos="0 0 -5.60284e-09" axis="-0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+            <geom name="ref/b2_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_8c7e589cf98741ba" />
+            <geom name="ref/b2_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_8c7e589cf98741ba" />
+            <body name="ref/a3" pos="0 0 0.053">
+              <inertial pos="-0.00824865 -1.26867e-05 0.0283427" quat="0.648172 0.646936 -0.284308 0.283753" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+              <geom name="ref/a3_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_2fa6986b40efe990" />
+              <geom name="ref/a3_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_2fa6986b40efe990" />
+              <body name="ref/b3" pos="0 0 0.053">
+                <inertial pos="0.00824865 -1.26864e-05 0.0246573" quat="0.646936 0.648172 -0.283753 0.284308" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                <joint name="ref/joint3" pos="0 0 -1.43051e-08" axis="0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+                <geom name="ref/b3_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_cdb66879ba3b5662" />
+                <geom name="ref/b3_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_cdb66879ba3b5662" />
+                <body name="ref/base" pos="0 0 0.053">
+                  <inertial pos="0.00824865 1.26867e-05 0.0283427" quat="0.284308 0.283753 -0.648172 0.646936" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                  <geom name="ref/base_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_b2f807ccdba07ce2" />
+                  <geom name="ref/base_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_b2f807ccdba07ce2" />
+                  <body name="ref/b4" pos="0 0 0.053">
+                    <inertial pos="-0.00824865 1.26864e-05 0.0246573" quat="0.283753 0.284308 -0.646936 0.648172" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                    <joint name="ref/joint4" pos="0 0 0" axis="-0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+                    <geom name="ref/b4_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_8c7e589cf98741ba" />
+                    <geom name="ref/b4_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_8c7e589cf98741ba" />
+                    <body name="ref/a5" pos="0 0 0.053">
+                      <inertial pos="-0.00824865 -1.26867e-05 0.0283427" quat="0.648172 0.646936 -0.284308 0.283753" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                      <geom name="ref/a5_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_2fa6986b40efe990" />
+                      <geom name="ref/a5_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_2fa6986b40efe990" />
+                      <body name="ref/b5" pos="0 0 0.053">
+                        <inertial pos="0.00824865 -1.26864e-05 0.0246573" quat="0.646936 0.648172 -0.283753 0.284308" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                        <joint name="ref/joint5" pos="0 0 0" axis="0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+                        <geom name="ref/b5_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_cdb66879ba3b5662" />
+                        <geom name="ref/b5_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_cdb66879ba3b5662" />
+                        <body name="ref/a6" pos="0 0 0.053">
+                          <inertial pos="0.00824865 1.26867e-05 0.0283427" quat="0.284308 0.283753 -0.648172 0.646936" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                          <geom name="ref/a6_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_b2f807ccdba07ce2" />
+                          <geom name="ref/a6_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_b2f807ccdba07ce2" />
+                          <body name="ref/foot_1" pos="0 0 0.053">
+                            <inertial pos="-0.00824865 1.26864e-05 0.0246573" quat="0.283753 0.284308 -0.646936 0.648172" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                            <joint name="ref/joint6" pos="-3.03457e-09 0 3.03457e-09" axis="-0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+                            <geom name="ref/foot_1_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_8c7e589cf98741ba" />
+                            <geom name="ref/foot_1_collisions" type="mesh" group="4" friction="0.6" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_8c7e589cf98741ba" />
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+<body name="native/foot_0">
+      <inertial pos="-0.00824865 -1.26867e-05 0.0283427" quat="0.648172 0.646936 -0.284308 0.283753" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+      <joint name="native/root" type="free" />
+      <geom name="native/foot_0_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_2fa6986b40efe990" />
+      <geom name="native/foot_0_collisions" type="mesh" group="4" friction="0.6" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_2fa6986b40efe990" />
+      <body name="native/b1" pos="0 0 0.053">
+        <inertial pos="0.00824865 -1.26864e-05 0.0246573" quat="0.646936 0.648172 -0.283753 0.284308" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+        <joint name="native/joint1" pos="0 0 0" axis="0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+        <geom name="native/b1_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_cdb66879ba3b5662" />
+        <geom name="native/b1_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_cdb66879ba3b5662" />
+        <body name="native/a2" pos="0 0 0.053">
+          <inertial pos="0.00824865 1.26867e-05 0.0283427" quat="0.284308 0.283753 -0.648172 0.646936" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+          <geom name="native/a2_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_b2f807ccdba07ce2" />
+          <geom name="native/a2_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_b2f807ccdba07ce2" />
+          <body name="native/b2" pos="0 0 0.053">
+            <inertial pos="-0.00824865 1.26864e-05 0.0246573" quat="0.283753 0.284308 -0.646936 0.648172" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+            <joint name="native/joint2" pos="0 0 -5.60284e-09" axis="-0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+            <geom name="native/b2_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_8c7e589cf98741ba" />
+            <geom name="native/b2_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_8c7e589cf98741ba" />
+            <body name="native/a3" pos="0 0 0.053">
+              <inertial pos="-0.00824865 -1.26867e-05 0.0283427" quat="0.648172 0.646936 -0.284308 0.283753" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+              <geom name="native/a3_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_2fa6986b40efe990" />
+              <geom name="native/a3_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_2fa6986b40efe990" />
+              <body name="native/b3" pos="0 0 0.053">
+                <inertial pos="0.00824865 -1.26864e-05 0.0246573" quat="0.646936 0.648172 -0.283753 0.284308" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                <joint name="native/joint3" pos="0 0 -1.43051e-08" axis="0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+                <geom name="native/b3_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_cdb66879ba3b5662" />
+                <geom name="native/b3_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_cdb66879ba3b5662" />
+                <body name="native/base" pos="0 0 0.053">
+                  <inertial pos="0.00824865 1.26867e-05 0.0283427" quat="0.284308 0.283753 -0.648172 0.646936" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                  <geom name="native/base_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_b2f807ccdba07ce2" />
+                  <geom name="native/base_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_b2f807ccdba07ce2" />
+                  <body name="native/b4" pos="0 0 0.053">
+                    <inertial pos="-0.00824865 1.26864e-05 0.0246573" quat="0.283753 0.284308 -0.646936 0.648172" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                    <joint name="native/joint4" pos="0 0 0" axis="-0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+                    <geom name="native/b4_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_8c7e589cf98741ba" />
+                    <geom name="native/b4_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_8c7e589cf98741ba" />
+                    <body name="native/a5" pos="0 0 0.053">
+                      <inertial pos="-0.00824865 -1.26867e-05 0.0283427" quat="0.648172 0.646936 -0.284308 0.283753" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                      <geom name="native/a5_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_2fa6986b40efe990" />
+                      <geom name="native/a5_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_2fa6986b40efe990" />
+                      <body name="native/b5" pos="0 0 0.053">
+                        <inertial pos="0.00824865 -1.26864e-05 0.0246573" quat="0.646936 0.648172 -0.283753 0.284308" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                        <joint name="native/joint5" pos="0 0 0" axis="0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+                        <geom name="native/b5_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.08 0.2 0.8 1" mesh="robot/mesh_cdb66879ba3b5662" />
+                        <geom name="native/b5_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_cdb66879ba3b5662" />
+                        <body name="native/a6" pos="0 0 0.053">
+                          <inertial pos="0.00824865 1.26867e-05 0.0283427" quat="0.284308 0.283753 -0.648172 0.646936" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                          <geom name="native/a6_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_b2f807ccdba07ce2" />
+                          <geom name="native/a6_collisions" type="mesh" condim="1" group="4" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_b2f807ccdba07ce2" />
+                          <body name="native/foot_1" pos="0 0 0.053">
+                            <inertial pos="-0.00824865 1.26864e-05 0.0246573" quat="0.283753 0.284308 -0.646936 0.648172" mass="0.25042" diaginertia="0.0002919 0.000220056 0.000199471" />
+                            <joint name="native/joint6" pos="-3.03457e-09 0 3.03457e-09" axis="-0.707107 0 0.707107" limited="true" range="-2.4 2.4" armature="0.0001" damping="0.05" />
+                            <geom name="native/foot_1_visuals" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.65 0.68 0.72 1" mesh="robot/mesh_8c7e589cf98741ba" />
+                            <geom name="native/foot_1_collisions" type="mesh" group="4" friction="0.6" density="0" rgba="0.25 0.35 0.55 0.35" mesh="robot/mesh_8c7e589cf98741ba" />
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <contact>
+    <exclude body1="ref/foot_0" body2="ref/b1" />
+    <exclude body1="ref/b1" body2="ref/a2" />
+    <exclude body1="ref/a2" body2="ref/b2" />
+    <exclude body1="ref/b2" body2="ref/a3" />
+    <exclude body1="ref/a3" body2="ref/b3" />
+    <exclude body1="ref/b3" body2="ref/base" />
+    <exclude body1="ref/base" body2="ref/b4" />
+    <exclude body1="ref/b4" body2="ref/a5" />
+    <exclude body1="ref/a5" body2="ref/b5" />
+    <exclude body1="ref/b5" body2="ref/a6" />
+    <exclude body1="ref/a6" body2="ref/foot_1" />
+  </contact>
+  <contact>
+    <exclude body1="native/foot_0" body2="native/b1" />
+    <exclude body1="native/b1" body2="native/a2" />
+    <exclude body1="native/a2" body2="native/b2" />
+    <exclude body1="native/b2" body2="native/a3" />
+    <exclude body1="native/a3" body2="native/b3" />
+    <exclude body1="native/b3" body2="native/base" />
+    <exclude body1="native/base" body2="native/b4" />
+    <exclude body1="native/b4" body2="native/a5" />
+    <exclude body1="native/a5" body2="native/b5" />
+    <exclude body1="native/b5" body2="native/a6" />
+    <exclude body1="native/a6" body2="native/foot_1" />
+  </contact>
+
+  <actuator>
+    <general name="ref/joint1" joint="ref/joint1" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+    <general name="ref/joint2" joint="ref/joint2" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+    <general name="ref/joint3" joint="ref/joint3" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+    <general name="ref/joint4" joint="ref/joint4" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+    <general name="ref/joint5" joint="ref/joint5" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+    <general name="ref/joint6" joint="ref/joint6" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+  </actuator>
+  <actuator>
+    <general name="native/joint1" joint="native/joint1" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+    <general name="native/joint2" joint="native/joint2" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+    <general name="native/joint3" joint="native/joint3" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+    <general name="native/joint4" joint="native/joint4" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+    <general name="native/joint5" joint="native/joint5" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+    <general name="native/joint6" joint="native/joint6" ctrllimited="false" ctrlrange="-15.7333 15.7333" forcelimited="true" forcerange="-200 200" biastype="affine" gainprm="15" biasprm="0 -15 -1.5" />
+  </actuator>
+
+  <sensor></sensor>
+
+</mujoco>

@@ -72,6 +72,7 @@
 - 旧 `src/`、训练/评估/可视化脚本、旧日志和输出已删除。
 - 旧 Zbot 奖励、终止、速度测量和命令逻辑全部视为废弃；后续实现必须从资产编译和 Base 坐标单元测试开始。
 - 周期踏步训练中选定的第 1000 代 checkpoint 已保存到 `bests/zbot_periodic_stepping_model_1000.pt`，对应 `1.5 Hz` 左右交替踏步任务，可作为后续预训练起点；配套 `env.yaml`、`agent.yaml` 和元数据也保存在 `bests/`。
+- 代码现在按 Task/Experiment 两层组织：Task 定义行为目标，Experiment 定义扰动、随机化、频率范围和 PPO 条件。抗扰动 Walking 实验必须复用 Walking Task 逻辑，不应复制任务实现。详见 `docs/task-experiment-structure.md`。
 
 ## 当前踏步/行走仿真配置：对齐 G1 平地
 

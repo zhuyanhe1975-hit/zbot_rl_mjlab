@@ -2,8 +2,28 @@ import math
 
 import numpy as np
 import torch
+from mjlab.envs import mdp as envs_mdp
 from mjlab.tasks.velocity.mdp.velocity_command import UniformVelocityCommand
 from mjlab.utils.lab_api.math import quat_apply, quat_apply_inverse
+
+
+class PartialBaseImpulse(envs_mdp.apply_body_impulse):
+    """Run randomized impulses on a subset while leaving others disturbance-free."""
+
+    def __init__(self, cfg, env):
+        super().__init__(cfg, env)
+        fraction = float(cfg.params.get("disturbed_fraction", 0.75))
+        if not 0.0 <= fraction <= 1.0:
+            raise ValueError("disturbed_fraction must be in [0, 1]")
+        self._disturbed_mask = torch.rand(self._num_envs, device=self._device) < fraction
+
+    def __call__(self, env, env_ids, *args, **kwargs):
+        kwargs.pop("disturbed_fraction", None)
+        super().__call__(env, env_ids, *args, **kwargs)
+        quiet = (~self._disturbed_mask).nonzero(as_tuple=False).flatten()
+        if quiet.numel():
+            zeros = torch.zeros((len(quiet), self._num_bodies, 3), device=self._device)
+            self._asset.write_external_wrench_to_sim(zeros, zeros, env_ids=quiet, body_ids=self._body_ids)
 
 
 def _base(env):
@@ -86,6 +106,13 @@ class ForwardVelocityVisualizer(UniformVelocityCommand):
 def base_ang_vel(env):
     robot, i = _base(env); q = robot.data.body_link_quat_w[:, i]
     return quat_apply_inverse(q, robot.data.body_link_ang_vel_w[:, i])
+
+def yaw_ang_vel_observation(env):
+    """Yaw rate around gravity in the Zbot locomotion frame."""
+    return base_ang_vel(env)[:, 2:3]
+
+def yaw_ang_vel_penalty(env):
+    return base_ang_vel(env)[:, 2].square()
 
 def projected_gravity(env):
     robot, i = _base(env); q = robot.data.body_link_quat_w[:, i]
