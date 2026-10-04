@@ -1,8 +1,0 @@
-{
-  "task": "Mjlab-Zbot-6dof-Periodic-Stepping",
-  "checkpoint": "bests/zbot_periodic_stepping_model_1000.pt",
-  "source_run": "logs/rsl_rl/zbot_periodic_stepping/2026-10-03_12-23-58",
-  "iteration": 1000,
-  "purpose": "initial pretraining checkpoint for future Zbot periodic stepping work",
-  "step_frequency_hz": 1.5
-}

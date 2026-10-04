@@ -1,0 +1,7 @@
+{
+  "task": "Mjlab-Zbot-6dof-Walking",
+  "iteration": 599,
+  "source_run": "logs/rsl_rl/zbot_walking/2026-10-03_16-51-58",
+  "checkpoint": "bests/zbot_walking_model_599.pt",
+  "sha256": "3b011a5ab8d53487304d0872a5bf84a57ebe1c62e9beb1b8d7a35af7842d8d45"
+}
