@@ -78,8 +78,15 @@ def forward_velocity_reward(env, scale=0.2):
     return 1.0 - torch.exp(-speed / scale)
 
 def lateral_velocity_penalty(env):
-    """Penalize sideways motion in the Base-defined left direction."""
-    return base_lin_vel(env)[:, 1].square()
+    """Penalize velocity perpendicular to gravity and horizontal heading."""
+    robot, i = _base(env)
+    forward_w = _forward_world(env)
+    gravity = torch.zeros_like(forward_w)
+    gravity[:, 2] = -1.0
+    lateral_w = torch.linalg.cross(forward_w, gravity)
+    lateral_w = lateral_w / lateral_w.norm(dim=-1, keepdim=True).clamp_min(1e-6)
+    lateral_velocity = (robot.data.body_link_lin_vel_w[:, i] * lateral_w).sum(-1)
+    return lateral_velocity.square()
 
 class ForwardVelocityVisualizer(UniformVelocityCommand):
     """Viewer-only arrows for the Base forward axis and measured speed."""
@@ -210,38 +217,80 @@ class ForwardStepLengthReward:
     def __init__(self, cfg, env):
         self._env = env
         self._sensor_name = cfg.params.get("sensor_name", "feet_ground_contact")
-        self._scale = float(cfg.params.get("scale", 0.05))
-        if self._scale <= 0:
+        self._max_step_length = float(cfg.params["max_step_length"])
+        self._step_length_scale = float(cfg.params["step_length_scale"])
+        self._balance_weight = float(cfg.params["balance_weight"])
+        if self._max_step_length <= 0:
+            raise ValueError("Maximum step length must be positive")
+        if self._step_length_scale <= 0:
             raise ValueError("Step length scale must be positive")
+        if self._balance_weight < 0:
+            raise ValueError("Balance weight must be non-negative")
         robot = env.scene["robot"]
         self._feet = robot.find_bodies(("foot_0", "foot_1"), preserve_order=True)[0]
+        self._has_touchdown = torch.zeros(
+            (env.num_envs, len(self._feet)), dtype=torch.bool, device=env.device
+        )
         self._previous_touchdown = torch.zeros(
             (env.num_envs, len(self._feet), 3), device=env.device
         )
-        self._has_touchdown = torch.zeros(
+        self._previous_touchdown_time = torch.zeros(
+            (env.num_envs, len(self._feet)), device=env.device
+        )
+        self._last_step_lengths = torch.zeros(
+            (env.num_envs, len(self._feet)), device=env.device
+        )
+        self._has_step_length = torch.zeros(
             (env.num_envs, len(self._feet)), dtype=torch.bool, device=env.device
         )
 
     def reset(self, env_ids=None):
         if env_ids is None:
             env_ids = slice(None)
-        self._previous_touchdown[env_ids] = 0.0
         self._has_touchdown[env_ids] = False
+        self._previous_touchdown[env_ids] = 0.0
+        self._previous_touchdown_time[env_ids] = 0.0
+        self._last_step_lengths[env_ids] = 0.0
+        self._has_step_length[env_ids] = False
 
     def __call__(self, env, **kwargs):
         del kwargs
         robot = env.scene["robot"]
         positions = robot.data.body_link_pos_w[:, self._feet]
-        touchdown = env.scene[self._sensor_name].compute_first_contact(dt=env.step_dt).bool()
+        sensor = env.scene[self._sensor_name]
+        touchdown = sensor.compute_first_contact(dt=env.step_dt).bool()
         forward = _forward_world(env).unsqueeze(1)
         displacement = ((positions - self._previous_touchdown) * forward).sum(-1)
         valid = touchdown & self._has_touchdown
-        score = displacement.clamp_min(0.0) * valid
+        now = env.episode_length_buf.to(self._previous_touchdown_time.dtype) * env.step_dt
+        intervals = now.unsqueeze(-1) - self._previous_touchdown_time
+        valid &= intervals > 0.0
+        frequency_gate = alternating_foot_phase(env, self._sensor_name).clamp(0.0, 1.0)
+        step_lengths = displacement.clamp(0.0, self._max_step_length)
+        # First contact establishes a world-space anchor, not a measured stride.
+        # Keep raw signed strides for symmetry; reward clipping must not hide it.
+        updated_lengths = torch.where(valid, displacement, self._last_step_lengths)
+        updated_valid = self._has_step_length | valid
+        balance_penalty = (
+            (updated_lengths[:, 0] - updated_lengths[:, 1]).abs()
+            * updated_valid.all(dim=-1)
+            * valid.any(dim=-1)
+        )
+        step_reward = (1.0 - torch.exp(-step_lengths / self._step_length_scale)) * valid
+        event_period = torch.where(valid, intervals, torch.zeros_like(intervals))
+        score = (step_reward * event_period).sum(-1)
+        balance_period = event_period.max(dim=-1).values
+        score = (score - self._balance_weight * balance_penalty * balance_period) * frequency_gate
         self._previous_touchdown = torch.where(
             touchdown.unsqueeze(-1), positions, self._previous_touchdown
         )
+        self._previous_touchdown_time = torch.where(
+            touchdown, now.unsqueeze(-1), self._previous_touchdown_time
+        )
         self._has_touchdown |= touchdown
-        return score.sum(-1) / env.step_dt
+        self._last_step_lengths = updated_lengths
+        self._has_step_length = updated_valid
+        return score / env.step_dt
 
 def action_rate_l2(env):
     return (env.action_manager.action - env.action_manager.prev_action).square().sum(-1)
