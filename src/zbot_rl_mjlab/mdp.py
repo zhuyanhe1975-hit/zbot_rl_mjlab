@@ -201,14 +201,18 @@ def support_foot_slip(env, sensor_name="feet_ground_contact"):
     speed_sq = robot.data.body_link_lin_vel_w[:, feet, :2].square().sum(-1)
     return (contact * speed_sq).sum(-1)
 
-def soft_landing(env, sensor_name="feet_ground_contact"):
-    """Penalize impact force only on the first contact after swing."""
+def soft_landing(env, sensor_name="feet_ground_contact", impact_threshold=5.0, scale=10.0):
+    """Penalize only excessive first-contact impact with a bounded cost."""
+    if impact_threshold < 0 or scale <= 0:
+        raise ValueError("Impact threshold must be non-negative and scale positive")
     sensor = env.scene[sensor_name]
     data = sensor.data
     assert data.force is not None
     first_contact = sensor.compute_first_contact(dt=env.step_dt)
-    impact = data.force.norm(dim=-1) * first_contact.float()
-    return impact.sum(-1)
+    impact = data.force.norm(dim=-1)
+    excess = (impact - impact_threshold).clamp_min(0.0)
+    penalty = (1.0 - torch.exp(-excess / scale)) * first_contact.float()
+    return penalty.sum(-1)
 
 
 class ForwardStepLengthReward:
