@@ -36,17 +36,35 @@ def main():
                 "Mjlab-Zbot-6dof-Step-Length-Walking",
             ]
         ),
-        add_help=False, return_unknown_args=True, config=mjlab.TYRO_FLAGS,
+        add_help=False,
+        return_unknown_args=True,
+        config=mjlab.TYRO_FLAGS,
     )
-    cfg = tyro.cli(PlayConfig, args=remaining,
-                   default=PlayConfig(env=load_env_cfg(task, play=True)),
-                   config=mjlab.TYRO_FLAGS)
+    cfg = tyro.cli(
+        PlayConfig,
+        args=remaining,
+        default=PlayConfig(env=load_env_cfg(task, play=True)),
+        config=mjlab.TYRO_FLAGS,
+    )
     cfg.env.scene.env_spacing = 1.0
+    # Assign each playback environment an ordered frequency from min to max.
+    # Training keeps random per-episode frequency sampling.
+    cfg.env.frequency_sampling = "sequential"
     cfg.env.viewer.enable_shadows = True
     cfg.env.viewer.enable_reflections = True
     disturbance = cfg.env.events.get("base_disturbance")
     if disturbance is not None:
         params = disturbance.params
+        if task == "Mjlab-Zbot-6dof-Disturbed-Walking":
+            # Playback is for inspecting the perturbation; disturb every loaded
+            # environment so the selected viewer cannot land on a quiet one.
+            params["disturbed_fraction"] = 1.0
+            # Keep only the perturbation arrows visible during this playback.
+            for sensor_cfg in cfg.env.scene.sensors:
+                if hasattr(sensor_cfg, "debug_vis"):
+                    sensor_cfg.debug_vis = False
+            for command_cfg in cfg.env.commands.values():
+                command_cfg.debug_vis = False
         force_range = tuple(params.get("force_range", ()))
         torque_range = tuple(params.get("torque_range", ()))
         if force_range == (0.0, 0.0) and torque_range == (0.0, 0.0):
@@ -73,6 +91,12 @@ def main():
         raise ValueError("viewer must be native or viser")
     env = ManagerBasedRlEnv(cfg.env, device=cfg.device)
     try:
+        if "base_disturbance" in cfg.env.events:
+            impulse = env.event_manager.get_term_cfg("base_disturbance").func
+            impulse._viz_cfg.scale = 0.04
+            impulse._viz_cfg.min_force = 0.01
+            impulse._viz_cfg.width = 0.012
+            impulse._viz_cfg.rgba = (0.95, 0.05, 0.75, 1.0)
         # MuJoCo's default shadow clip is only 1 m.  Extend it so shadows do
         # not disappear when the robot walks away from the initial origin.
         model = getattr(env.sim, "_mj_model", None)
@@ -81,11 +105,20 @@ def main():
             model.vis.map.shadowscale = 0.9
         wrapped = RslRlVecEnvWrapper(env, clip_actions=agent.clip_actions)
         runner = MjlabOnPolicyRunner(wrapped, asdict(agent), device=cfg.device)
-        runner.load(str(checkpoint), load_cfg={"actor": True}, strict=True,
-                    map_location=cfg.device)
+        runner.load(
+            str(checkpoint),
+            load_cfg={"actor": True},
+            strict=True,
+            map_location=cfg.device,
+        )
         policy = runner.get_inference_policy(device=cfg.device)
         viewer = NativeMujocoViewer if cfg.viewer == "native" else ViserPlayViewer
-        viewer(wrapped, policy).run()
+        viewer_instance = viewer(wrapped, policy)
+        if task == "Mjlab-Zbot-6dof-Disturbed-Walking" and viewer is NativeMujocoViewer:
+            # Native viewer otherwise draws debug arrows only for the selected env.
+            viewer_instance._show_all_envs = True
+            viewer_instance._show_debug_vis = True
+        viewer_instance.run()
     finally:
         env.close()
 

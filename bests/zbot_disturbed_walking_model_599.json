@@ -1,0 +1,9 @@
+{
+  "task": "Mjlab-Zbot-6dof-Disturbed-Walking",
+  "iteration": 599,
+  "source_run": "logs/rsl_rl/zbot_disturbed_walking/2026-10-07_14-37-06",
+  "checkpoint": "bests/zbot_disturbed_walking_model_599.pt",
+  "sha256": "1aec66cbf084b2b1d3b7b98ea7b40fe49e22f2fb28c0d64824e11ff8eeabb494",
+  "env_config": "bests/disturbed_walking_env.yaml",
+  "agent_config": "bests/disturbed_walking_agent.yaml"
+}
